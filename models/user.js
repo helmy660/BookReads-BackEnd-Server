@@ -14,8 +14,8 @@ var userSchema = new mongoose.Schema({
             type: Schema.Types.ObjectId, 
             ref: 'Book' 
         },
-        book_state: String,
-        user_rating: Number 
+        //book_state: String,
+        //user_rating: Number 
     }],
     profile_img: { 
         data: Buffer, 

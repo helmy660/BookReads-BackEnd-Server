@@ -5,8 +5,13 @@ var authorSchema = new mongoose.Schema({
     first_name:{type: String, required: true},
     last_name:{type: String, required: true},
     date_of_birth: Date,
-    brief_description: String
+    brief_description: String,
+    author_img: { 
+        data: Buffer, 
+        contentType: String 
+    }
 });
+
 
 authorSchema.plugin(uniqueValidator);
 var Author = mongoose.model("Author",authorSchema);
