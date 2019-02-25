@@ -1,8 +1,8 @@
 var mongoose= require("mongoose");
-
+var uniqueValidator = require('mongoose-unique-validator');
 
 var bookSchema = new mongoose.Schema({
-    name : String , 
+    name : {type: String, required: true}, 
     category_id : { 
                     type : mongoose.Schema.Types.ObjectId,
                     ref : "Category"
@@ -13,6 +13,7 @@ var bookSchema = new mongoose.Schema({
                 },
 });
 
+bookSchema.plugin(uniqueValidator);
 var Book = mongoose.model("Book",bookSchema);
 
 module.exports= Book;

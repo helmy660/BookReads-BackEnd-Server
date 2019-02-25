@@ -21,7 +21,10 @@ var Category = require("./models/category");
 
 //Adding new category (need name of the category in the request body from the form)
 app.post("/category/add",function(req,res){
-    var newCategory={name:req.body.cName};
+    var newCategory= {
+        name:req.body.cName
+    };
+    
     Category.create(newCategory,function(err,newCat){
         if(err){
             console.log(err);
@@ -70,7 +73,13 @@ app.post("/category/edit/:catID",function(req,res){
 //Adding new author (will need fName , lName , dob , brief description)
 app.post("/author/add",function(req,res){
     console.log(req.body.fName);
-    var newAuth= { first_name : req.body.fName , last_name : req.body.lName , date_of_birth : req.body.dob , brief_description : req.body.bd };
+    var newAuth= { 
+        first_name : req.body.fName , 
+        last_name : req.body.lName , 
+        date_of_birth : req.body.dob , 
+        brief_description : req.body.bd 
+    };
+
     Author.create(newAuth,function(err,createdAuth){
         if(err){
             console.log(err);
@@ -121,7 +130,11 @@ app.post("/book/add",function(req,res){
     var bName   = req.body.bName;
     var catID   = req.body.catID;
     var authID  = req.body.authID;
-    var newBook = { name : bName , category_id : catID , auth_id : authID  };
+    var newBook = { 
+        name : bName , 
+        category_id : catID , 
+        auth_id : authID  
+    };
 
     Book.create(newBook,function(err,createdBook){
         if (err){
@@ -179,7 +192,80 @@ app.get("/book/bycategory/:cat_id",function(req,res){
     })
 });
 
- 
+
+
+//------------------------------------------------------------User routes----------------------------------------------------------------------
+
+//Adding new user (will need fName , lName , email , passwd , re_passwd, profileImg)
+
+app.post("/user/add",function(req,res){
+    var newUser = { 
+        first_name : req.body.fName, 
+        last_name : req.body.lName, 
+        email : req.body.email, 
+        password : req.body.passwd,
+        re_password: req.body.re_passwd
+    };
+
+    if(password == re_password)
+    {
+        User.create(newUser,function(err,createdUser){
+            if(err) {
+                console.log(err);
+                res.send({status:"fail"});
+            }
+            else {
+                console.log(createdUser);
+                res.send({status:"success"});
+            }
+        });
+    }
+
+    else {
+        console.log("The password doesn't match");
+        res.send({status:"fail"});
+    }
+    
+});
+
+
+//Edit existing user (will need fName , lName , email , passwd from the form and user id from req.params )
+app.post("/user/edit/:userID",function(req,res){
+    var userID=req.params.userID;
+
+    User.update({_id:userID},{$set: { fisrt_name : req.body.fName  , last_name : req.body.lName , 
+                                       email : req.body.email , password : req.body.passwd 
+                                    }},{upsert: true},function(err){
+        if (err){
+            console.log("Editing User details is failed");
+            res.send({status:"fail"});
+        }
+        else{
+            res.send({status:"success"});
+        }
+    });   
+});
+
+//Getting all users
+app.get("/user/all",function(req,res){
+    User.find({},function(err,allUsers){
+        if(err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else{
+            console.log(allUsers);
+            res.send({status:"success",allUsers:allUsers});
+        }
+    });
+});
+
+
+
+
+
+
+
 
 
 
