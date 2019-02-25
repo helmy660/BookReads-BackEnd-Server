@@ -179,6 +179,40 @@ app.get("/book/bycategory/:cat_id",function(req,res){
     })
 });
 
+
+//-------------------------------------------------------Review Routes--------------------------------------------------------
+
+// Get reviews for specific book (will need book id in req.params)   (Not tested yet)
+app.get("/review/bybook/:book_id",function(req,res){
+    var book_id = req.params.book_id;
+    Review.find({book_id:ObjectID(book_id)},function(err,foundReviews){
+        if(err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else{
+            console.log(foundReviews);
+            res.send({status:"success",bookReviews:foundReviews});
+        }
+    })
+});
+
+//Submit review for specific user for specific book (will need book id and user id in req.params also review body from the form)
+app.post("/review/add/:book_id/:user_id",function(req,res){
+    var book_id = req.params.book_id;
+    var user_id = req.params.user_id;
+    var review_body= req.body.review_body;
+    Review.create({body:review_body,book_id : ObjectID(book_id),user_id : ObjectID(user_id)},function(err,review){
+        if (err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else{
+            console.log(review);
+            res.send({status:"success"});
+        }
+    });
+});
  
 
 
