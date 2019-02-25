@@ -11,7 +11,7 @@ var userSchema = new mongoose.Schema({
     re_password: {type: String, required: true},
     user_book: [{
         book_id: { 
-            type: Schema.Types.ObjectId, 
+            type: mongoose.Schema.Types.ObjectId, 
             ref: 'Book' 
         },
         //book_state: String,

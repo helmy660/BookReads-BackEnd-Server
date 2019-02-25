@@ -1,6 +1,6 @@
 var mongoose= require("mongoose");
-var Book     = require("./models/book");
-var User     = require("./models/user");
+var Book     = require("../models/book");
+var User     = require("../models/user");
 
 
 var reviewSchema = new mongoose.Schema({
