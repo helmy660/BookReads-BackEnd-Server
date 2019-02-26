@@ -129,6 +129,31 @@ app.get("/author/all",function(req,res){
     });
 });
 
+//Getting author by id + all of his books
+
+app.get("/author/:author_id",function(req,res){
+    let author_id= req.params.author_id;
+
+    Author.findOne({_id:author_id},function(err,foundAuthor){
+        if(err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else{ 
+            Book.find({auth_id : ObjectID(author_id)},function(err2,foundBooks){
+                if(err2){
+                    console.log(err2);
+                    res.send({status:"fail"});
+                }
+                else{
+
+                    res.send({status:"success",author:foundAuthor,author_books:foundBooks});
+                }
+            });
+        }
+    })
+});
+
 //----------------------------------------------------------Book Routes------------------------------------------------------------------
 
 //Adding new book (will require name , category id , auth id from form data)
@@ -156,7 +181,7 @@ app.post("/book/add",function(req,res){
 
 //Getting all books
 app.get("/book/all",function(req,res){
-    Book.find({},function(err,allBooks){
+    Book.find({}).populate("category_id").populate("auth_id").exec(function(err,allBooks){
         if(err){
             console.log(err);
             res.send({status:"fail"});
@@ -165,7 +190,7 @@ app.get("/book/all",function(req,res){
             console.log(allBooks);
             res.send({status:"success",allBooks:allBooks});
         }
-    });
+    });                               
 });
 
 //Getting all books under specific author id  (will need author id)
