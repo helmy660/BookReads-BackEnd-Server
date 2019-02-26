@@ -140,7 +140,7 @@ app.get("/author/:author_id",function(req,res){
             console.log(err);
             res.send({status:"fail"});
         }
-        else{ 
+        else{
             Book.find({auth_id : ObjectID(author_id)},function(err2,foundBooks){
                 if(err2){
                     console.log(err2);
@@ -191,7 +191,7 @@ app.get("/book/all",function(req,res){
             console.log(allBooks);
             res.send({status:"success",allBooks:allBooks});
         }
-    });                               
+    });
 });
 
 //Getting all books under specific author id  (will need author id)
@@ -222,7 +222,7 @@ app.get("/book/bycategory/:cat_id",function(req,res){
             console.log(foundBooks);
             res.send({status:"success",books_category:foundBooks});
         }
-    });       
+    });
 });
 
 
@@ -237,7 +237,7 @@ app.get("/book/:book_id",function(req,res){
         res.send({status:"fail"});
     }
     else{
-        
+
         console.log(foundBook);
         res.send({status:'success',bookData:foundBook});
     }
@@ -260,9 +260,9 @@ Rate.findOne({book_id : ObjectID(book_id) , user_id:ObjectID(user_id)},function(
         console.log(err);
         res.send({status:"fail"});
     }
-    else {  // No errors 
+    else {  // No errors
         if(foundRate) {// There is already existed rate for this user and this book
-                       // So we will not increase this book number of rates 
+                       // So we will not increase this book number of rates
                        // Just update the rate then update this book average rating
             console.log(foundRate);
             foundRate.user_rate=rate;
@@ -273,8 +273,8 @@ Rate.findOne({book_id : ObjectID(book_id) , user_id:ObjectID(user_id)},function(
                 }
                 else{
                     console.log(updatedRate); // Saving is done successfully now we need to update book avg rate
-                                              // need to sum all user rates then divide by num of rates 
-                    let totalRates=0; // total rates for this book 
+                                              // need to sum all user rates then divide by num of rates
+                    let totalRates=0; // total rates for this book
                     Rate.find({book_id : ObjectID(book_id)},function(err3,foundRates2){
                         if(err3){
                             console.log(err3);
@@ -309,15 +309,15 @@ Rate.findOne({book_id : ObjectID(book_id) , user_id:ObjectID(user_id)},function(
                 }
             });
         }
-        else{         // There is no rate for this user for this book 
-                      // so we will need to add document this user id and book id 
-                      // also we will need to increase the number of rates then update this book avg rate 
+        else{         // There is no rate for this user for this book
+                      // so we will need to add document this user id and book id
+                      // also we will need to increase the number of rates then update this book avg rate
             Rate.create({user_rate: rate, book_id : ObjectID(book_id), user_id : user_id},function(err2,createdRate){
                 if (err2){
                     console.log(err2);
                     res.send({status:"fail"});
                 }
-                else{ // document created successfully now we need to update number of rates and avg rate for this book 
+                else{ // document created successfully now we need to update number of rates and avg rate for this book
                     Book.findOne({_id: ObjectID(book_id)},function(err3,foundBook){
                         if(err3){
                             console.log(err3);
@@ -496,9 +496,9 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
             console.log(err);
             res.send({status:"fail"});
         }
-        else{ 
+        else{
             if(getState) { // This state exists for this user and this book
-                           // need to change just the state 
+                           // need to change just the state
                 getState.state = bookState;
                 getState.save(function(err,d) {
                     if(err) {
@@ -512,12 +512,12 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
             }
 
             else { // There is no state for this user and this book
-                   // need to create this state and push this book to this user book list 
+                   // need to create this state and push this book to this user book list
                 State.create({state:bookState , book_id: ObjectID(bookID) , user_id: ObjectID(userID)},function(err,review){
                     if (err){
                         res.send({status:"fail"});
                     }
-                    else { // state created successfully 
+                    else { // state created successfully
                            // now we need to push this book for this user book list
                         console.log(getState);
                         User.findOne({_id:userID},function(err,foundUser){
@@ -525,15 +525,15 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
                                 console.log(err);
                                 res.send({status:"fail"});
                             }
-                            else { //now pushing 
+                            else { //now pushing
                                foundUser.user_book.push(ObjectID(bookID));
                                foundUser.save(function(err){
                                 if (err){
                                     res.send({status:"fail"});
                                 }
-                                else 
+                                else
                                 res.send({status:"success"});
-                               }); 
+                               });
                             }
                         });
                     }
