@@ -462,20 +462,21 @@ app.get("/user/all",function(req,res){
 app.get("/state/:bookState/:bookID/:userID",function(req,res){
     var bookID = req.params.bookID;
     var userID = req.params.userID;
-    var bookState =  req.body.bookState;
+    var bookState =  req.params.bookState;
 
 
-    State.findOne({book_id: ObjectID(bookID) , user_id: ObjectID(userID)},function(err,foundState){
+    State.findOne({book_id: ObjectID(bookID) , user_id: ObjectID(userID)},function(err,getState){
         if(err){
             console.log(err);
             res.send({status:"fail"});
         }
         else{
-            if(foundState) {
-                foundState.state = bookState;
-                foundState.save(function(err,d) {
+            if(getState) {
+                getState.state = bookState;
+                getState.save(function(err,d) {
                     if(err) {
                         console.log(err);
+                        res.send({status:"fail"});
                     }
                     else {
                         console.log(d);
@@ -489,8 +490,17 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
                         res.send({status:"fail"});
                     }
                     else {
-                        console.log(foundState);
+                        console.log(getState);
                         res.send({status:"success"});
+                        User.findOne({"user_book.book_id":ObjectID(bookID)},function(err,updateState){
+                            if(err) {
+                                User.user_book.push(ObjectID(bookID));
+                            }
+                            else {
+                                console.log("This id is already existed");
+                                
+                            }
+                        });
                     }
                 });
             }
