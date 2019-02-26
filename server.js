@@ -20,6 +20,7 @@ var User     = require("./models/user");
 var Review   = require("./models/review");
 var Category = require("./models/category");
 var Rate = require("./models/rate");
+var State= require("./models/state");
 //--------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -495,8 +496,9 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
             console.log(err);
             res.send({status:"fail"});
         }
-        else{
-            if(getState) {
+        else{ 
+            if(getState) { // This state exists for this user and this book
+                           // need to change just the state 
                 getState.state = bookState;
                 getState.save(function(err,d) {
                     if(err) {
@@ -504,26 +506,34 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
                         res.send({status:"fail"});
                     }
                     else {
-                        console.log(d);
+                        res.send({status:"success"});
                     }
                 });
             }
 
-            else {
+            else { // There is no state for this user and this book
+                   // need to create this state and push this book to this user book list 
                 State.create({state:bookState , book_id: ObjectID(bookID) , user_id: ObjectID(userID)},function(err,review){
                     if (err){
                         res.send({status:"fail"});
                     }
-                    else {
+                    else { // state created successfully 
+                           // now we need to push this book for this user book list
                         console.log(getState);
-                        res.send({status:"success"});
-                        User.findOne({"user_book.book_id":ObjectID(bookID)},function(err,updateState){
+                        User.findOne({_id:userID},function(err,foundUser){
                             if(err) {
-                                User.user_book.push(ObjectID(bookID));
+                                console.log(err);
+                                res.send({status:"fail"});
                             }
-                            else {
-                                console.log("This id is already existed");
-                                
+                            else { //now pushing 
+                               foundUser.user_book.push(ObjectID(bookID));
+                               foundUser.save(function(err){
+                                if (err){
+                                    res.send({status:"fail"});
+                                }
+                                else 
+                                res.send({status:"success"});
+                               }); 
                             }
                         });
                     }
