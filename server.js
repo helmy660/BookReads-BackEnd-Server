@@ -456,8 +456,47 @@ app.get("/user/all",function(req,res){
 });
 
 
+//------------------------------------------------------------State routes----------------------------------------------------------------------
+
+// Edit book state for specific user (will need user id and book id in req.params)   (Not tested yet)
+app.get("/state/:bookState/:bookID/:userID",function(req,res){
+    var bookID = req.params.bookID;
+    var userID = req.params.userID;
+    var bookState =  req.body.bookState;
 
 
+    State.findOne({book_id: ObjectID(bookID) , user_id: ObjectID(userID)},function(err,foundState){
+        if(err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else{
+            if(foundState) {
+                foundState.state = bookState;
+                foundState.save(function(err,d) {
+                    if(err) {
+                        console.log(err);
+                    }
+                    else {
+                        console.log(d);
+                    }
+                });
+            }
+
+            else {
+                State.create({state:bookState , book_id: ObjectID(bookID) , user_id: ObjectID(userID)},function(err,review){
+                    if (err){
+                        res.send({status:"fail"});
+                    }
+                    else {
+                        console.log(foundState);
+                        res.send({status:"success"});
+                    }
+                });
+            }
+        }
+    });
+});
 
 
 

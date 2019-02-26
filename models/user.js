@@ -11,16 +11,16 @@ var userSchema = new mongoose.Schema({
     password: {type: String, required: true},
     re_password: {type: String, required: true},
     user_book: [{
-        book_id: { 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Book' 
+        book_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Book'
         },
-       // book_state: String,
-       // user_rating: Number 
+        //book_state: String,
+        //user_rating: Number
     }],
-    profile_img: { 
-        data: Buffer, 
-        contentType: String 
+    profile_img: {
+        data: Buffer,
+        contentType: String
     }
 
 });
