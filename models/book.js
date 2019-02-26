@@ -11,6 +11,14 @@ var bookSchema = new mongoose.Schema({
                    type : mongoose.Schema.Types.ObjectId,
                     ref : "Author"
                 },
+    book_img: { 
+                    data: Buffer, 
+                    contentType: String 
+                },
+            
+    avg_rate: Number,
+    no_of_rates: Number,
+    
 });
 
 bookSchema.plugin(uniqueValidator);

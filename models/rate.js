@@ -3,8 +3,8 @@ var Book     = require("../models/book");
 var User     = require("../models/user");
 
 
-var reviewSchema = new mongoose.Schema({
-    body: String,
+var rateSchema = new mongoose.Schema({
+    user_rate: Number,
     book_id : { 
         type : mongoose.Schema.Types.ObjectId,
          ref : "Book"
@@ -15,6 +15,6 @@ var reviewSchema = new mongoose.Schema({
      },
 });
 
-var Review = mongoose.model("Review",reviewSchema);
+var Rate = mongoose.model("Rate",rateSchema);
 
-module.exports= Review;
+module.exports= Rate;
