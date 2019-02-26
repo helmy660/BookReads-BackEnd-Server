@@ -498,7 +498,6 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
                             }
                             else {
                                 console.log("This id is already existed");
-                                
                             }
                         });
                     }
