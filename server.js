@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 //----------------------------------------------------- DataBase Connection---------------------------------------------------------------
-mongoose.connect("mongodb://localhost/good_reads");
+mongoose.connect( process.env.MONGODB_URL || "mongodb://localhost/good_reads");
 
 //-----------------------------------------------------Requiring database models------------------------------------------------------
 var Author   = require("./models/author");
