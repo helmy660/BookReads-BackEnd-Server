@@ -141,16 +141,17 @@ app.get("/author/:author_id",function(req,res){
             res.send({status:"fail"});
         }
         else{
-            Book.find({auth_id : ObjectID(author_id)},function(err2,foundBooks){
+            Book.find({auth_id : ObjectID(author_id)}).populate("category_id").exec(function(err2,foundBooks){
                 if(err2){
                     console.log(err2);
                     res.send({status:"fail"});
                 }
                 else{
-
                     res.send({status:"success",author:foundAuthor,author_books:foundBooks});
                 }
             });
+
+
         }
     })
 });
