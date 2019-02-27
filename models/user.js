@@ -14,7 +14,7 @@ var userSchema = new mongoose.Schema({
         book_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Book'
-        },
+        }
         //book_state: String,
         //user_rating: Number
     }],
