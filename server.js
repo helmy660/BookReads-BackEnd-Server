@@ -486,15 +486,9 @@ app.get("/user/all",function(req,res){
 //Getting specific user all data including books, rating and state 
 
 app.get("/user/:user_id", async function(req,res){
-
     let user_id= req.params.user_id;
-    // First we need to get this user and from user schema it will include all books 
-    //et user_data;
     let returnArray=[];
 
-
-
-    
     User.findById({_id:user_id},function(err,foundUser){
         if(err)
         { 
@@ -509,67 +503,17 @@ app.get("/user/:user_id", async function(req,res){
             findRate(foundUser).then(()=>{
 
                 res.send({status:"success",user_name:foundUser.first_name ,userbooks:returnArray}); 
-
-
+            })  
             })
-
-                
-            })
-            
         });
               
         }
-         
-
-
     });
 
 
-
-
-
-    ///Working but not propely 
-    //  await User.findById({_id:user_id},async function(err,foundUser){
-    //     for (let i=0;i<foundUser.user_book.length;i++){
-    //         // finding book details first
-    //           await Book.findById({_id:ObjectID (foundUser.user_book[i]._id)},async function(err,foundBook){
-    //             if(err)
-    //                 { 
-    //                     console.log(err);
-    //                     res.send({status:"fail"});
-    //                 }
-    //             else{
-
-    //                 returnArray[i]={bookId:foundBook._id,name :foundBook.name , avgRating : foundBook.avg_rate };
-    //                 // find author details for this book 
-    //                  await Author.findById({_id:ObjectID(foundBook.auth_id)}, function(err,foundAuthor){
-    //                 if(err)
-    //                 { 
-    //                     //console.log(err);
-    //                     res.send({status:"fail"});
-    //                 }
-    //                 else{
-                        
-    //                     returnArray[i].author= foundAuthor.first_name+" "+foundAuthor.last_name;
-    //                     returnArray[i].authorId=foundAuthor._id;
-    //                     //console.log(returnArray[i]);
-    //                 }
-    //                 });
-    //             }
-    //         });
-    //     }
-    //    // console.log(1111111);
-    //     res.send({status:"success",user_name: foundUser.first_name,userbooks:returnArray});
-    // })
-/////////////
-
-
-
 async function findBook(foundUser) {
-    //let returnObject = [];
     for (let i=0;i<foundUser.user_book.length;i++)
     {
-        //console.log(foundUser.user_book[i])
         await Book.findById({_id:ObjectID (foundUser.user_book[i]._id)},async function(err,foundBook){
          if(err)
          { 
@@ -642,64 +586,8 @@ async function findRate(foundUser) {
     }
 }
 
-
-
-    
-
-
-
-
-
-
-
 });
 
-
-
-    // User.findById({_id:user_id},function(err,foundUser){
-    //     if(err)
-    //     { 
-    //         console.log(err);
-    //         res.send({status:"fail"});
-    //     }
-    //     else{
-          
-    //         findBook(foundUser).then((result) => {
-    //         res.send({status:"success", user_data : result }); 
-    //     });
-            
-             
-
-    //     }
-    // });
-
-
-   
-
-
-
-// async function findBook(foundUser) {
-//     let returnObject = [];
-//     for (let i=0;i<foundUser.user_book.length;i++)
-//     {
-//         //console.log(foundUser.user_book[i])
-//         await Book.findById({_id:ObjectID (foundUser.user_book[i]._id)}, function(err,foundBook){
-//          if(err)
-//          { 
-//             // console.log(err);
-//             // res.send({status:"fail"});
-//          }
-//             else{
-//                 console.log(foundBook.name);
-//                  returnObject.push(foundBook.name);
-
-//             }
-           
-//         })
-//     }
-
-//     return returnObject;
-//}
 //------------------------------------------------------------State routes----------------------------------------------------------------------
 
 // Edit book state for specific user (will need user id and book id in req.params)   (Not tested yet)
