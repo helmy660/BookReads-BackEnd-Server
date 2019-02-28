@@ -158,15 +158,17 @@ app.get("/author/:author_id",function(req,res){
 
 //----------------------------------------------------------Book Routes------------------------------------------------------------------
 
-//Adding new book (will require name , category id , auth id from form data)
+//Adding new book (will require name , category id , auth id from form data + image as file)
 app.post("/book/add",function(req,res){
     var bName   = req.body.bName;
     var catID   = req.body.catID;
     var authID  = req.body.authID;
+    var book_image =base64_encode(req.body.file) ;
     var newBook = {
         name : bName ,
         category_id : catID ,
-        auth_id : authID
+        auth_id : authID,       //////////////////////////////////////
+        book_img : book_image
     };
 
     Book.create(newBook,function(err,createdBook){
@@ -244,6 +246,12 @@ app.get("/book/:book_id",function(req,res){
     }
    });
 });
+
+
+function base64_encode(file) {
+    var buff = fs.readFileSync(file);
+    return new Buffer(buff).toString('base64');
+}
 
 
 //------------------------------------------------------Rate Routes-----------------------------------------------------------
@@ -648,10 +656,6 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
         }
     });
 });
-
-
-
-
 
 // Adjusting port to listen to
 app.listen(process.env.PORT||3000,process.env.IP,function(){
