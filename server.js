@@ -18,14 +18,14 @@ var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
 
 //-------------------------------------------------------------Uses-------------------------------------------------------------------
 app.use(cors());
-const storage = multer.diskStorage({
-    destination: "./public/uploads/"
- });
+// const storage = multer.diskStorage({
+//     destination: "./public/uploads/"
+//  });
  
- const upload = multer({
-    storage: storage,
-    limits:{fileSize: 1000000}
- });
+//  const upload = multer({
+//     storage: storage,
+//     limits:{fileSize: 1000000}
+//  });
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
@@ -398,27 +398,27 @@ app.post("/author/delete/:authID", function(req, res){
 //----------------------------------------------------------Book Routes------------------------------------------------------------------
 
 //Adding new book (will require name , category id , auth id from form data + image as file)
-app.post("/book/add",upload.single('file'),function(req,res){
+app.post("/book/add",function(req,res){
     var bName   = req.body.bName;
     var catID   = req.body.catID;
     var authID  = req.body.authID;
-    //var book_image =base64_encode(req.body.file) ;
+    var book_img = req.body.file;
     var newBook =  {
         name : bName ,
         category_id : catID ,
         auth_id : authID,       //////////////////////////////////////
-        book_img:{data:"",contentType:""}
+        book_img:{data:book_img,contentType:"image/png"}
     };
 
-    if(req.file.path){
-        newBook.book_img.data=fs.readFileSync(req.file.path);
-        newBook.book_img.contentType='image/png';
+    // if(req.file.path){
+    //     newBook.book_img.data=fs.readFileSync(req.file.path);
+    //     newBook.book_img.contentType='image/png';
 
-    }else
-    {
-        newBook.book_img={};
+    // }else
+    // {
+    //     newBook.book_img={};
 
-    }
+    // }
         
     Book.create(newBook,function(err,createdBook){
         if (err){
