@@ -3,7 +3,7 @@
 //
 
 var mongoose= require("mongoose");
-var bcrypt = require('bcrypt');
+//var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;             // how many rounds or iterations the key setup phase uses
 var MAX_LOGIN_ATTEMPTS = 5;            // max repeated failure login
 var LOCK_TIME = 2 * 60 * 60 * 1000;    // two hours lock

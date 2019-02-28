@@ -3,12 +3,12 @@ var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
-var morgan = require('morgan');
+//var morgan = require('morgan');
 var {ObjectID} = require("mongodb");
 var cors = require("cors");
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
-var config = require('./config'); // get our config file
+//var config = require('./config'); // get our config file
 
 const multer = require("multer");
 
@@ -28,8 +28,8 @@ const storage = multer.diskStorage({
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
-app.use(morgan('dev'));
-app.set('superSecret', config.secret); // secret variable
+//app.use(morgan('dev'));
+//app.set('superSecret', config.secret); // secret variable
 
 //----------------------------------------------------- DataBase Connection---------------------------------------------------------------
 mongoose.connect( process.env.MONGODB_URL || "mongodb://localhost/good_reads");
@@ -406,7 +406,7 @@ app.post("/book/add",upload.single('file'),function(req,res){
         name : bName ,
         category_id : catID ,
         auth_id : authID,       //////////////////////////////////////
-        book_img : book_image
+        
     };
 
     if(req.file.path){
