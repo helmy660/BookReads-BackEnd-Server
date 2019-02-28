@@ -1,15 +1,23 @@
 //----------------------------------------------------Setting configuration----------------------------------------------------------
-var express= require("express");
+var express = require("express");
 var app = express();
-var bodyParser= require("body-parser");
-var mongoose=require("mongoose");
-var {ObjectID}=require("mongodb");
+var bodyParser = require("body-parser");
+var mongoose = require("mongoose");
+var morgan = require('morgan');
+var {ObjectID} = require("mongodb");
 var cors = require("cors");
+
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var config = require('./config'); // get our config file
+var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
 
 //-------------------------------------------------------------Uses-------------------------------------------------------------------
 app.use(cors());
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
+app.use(morgan('dev'));
+app.set('superSecret', config.secret); // secret variable
+
 //----------------------------------------------------- DataBase Connection---------------------------------------------------------------
 mongoose.connect( process.env.MONGODB_URL || "mongodb://localhost/good_reads");
 
@@ -21,7 +29,157 @@ var Review   = require("./models/review");
 var Category = require("./models/category");
 var Rate = require("./models/rate");
 var State= require("./models/state");
+
+
+//-----------------------------------------------------------Basic routes---------------------------------------------------------------------
+app.get('/', function(req, res) {
+    res.send('Hello! The API is at http://localhost:' + port + '/api');
+});
+
+//-----------------------------------------------------------API routes---------------------------------------------------------------------
+// get an instance of the router for api routes
+var apiRoutes = express.Router();
+
+// route to authenticate a user (POST http://localhost:3000/api/authenticate)
+apiRoutes.post('/authenticate', function(req, res) {
+  // find the user
+  User.findOne({email: req.body.email}, function(err, user) {
+    if (err){
+        console.log(err);
+    }
+
+    if (!user) {
+      res.json({ success: false, message: 'Authentication failed. User not found.' });
+    }
+
+    else if (user) {
+      // check if password matches
+      if (user.password != req.body.password) {
+        res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+      }
+      else {
+        // if user is found and password is right
+        // create a token with only our given payload
+        // we don't want to pass in the entire user since that has the password
+        const payload = {
+            admin: user.admin
+        };
+
+        var token = jwt.sign(payload, app.get('superSecret'), {
+            expiresInMinutes: 1440 // expires in 24 hours
+        });
+
+        // return the information including token as JSON
+        res.json({
+            success: true,
+            message: 'Enjoy your token!',
+            token: token
+          });
+        }
+      }
+
+    });
+  });
+
+
+// route middleware to verify a token
+apiRoutes.use(function(req, res, next) {
+    // check header or url parameters or post parameters for token
+    var token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+    // decode token
+    if (token) {
+      // verifies secret and checks exp
+      jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+          if (err) {
+          return res.json({ success: false, message: 'Failed to authenticate token.' });
+          }
+          else {
+          // if everything is good, save to request for use in other routes
+          req.decoded = decoded;
+          next();
+          }
+      });
+
+    }
+    else {
+        // if there is no token
+        // return an error
+        return res.status(403).send({
+        success: false,
+        message: 'No token provided.'
+    });
+  }
+});
+
+
+// route to show a random message (GET http://localhost:8080/api/)
+apiRoutes.get('/', function(req, res) {
+    res.json({ message: 'Welcome to the coolest API on earth!' });
+});
+
+// route to return all users (GET http://localhost:8080/api/users)
+apiRoutes.get('/users', function(req, res) {
+    User1.find({}, function(err, users) {
+      res.json(users);
+    });
+});
+
+// apply the routes to our application with the prefix /api
+app.use('/api', apiRoutes);
+
+
+//Function to delete book , review, state and rate
+const book_remove = function(book_id){
+
+    Book.findByIdAndRemove({book_id }, function(err, bookDeleted){
+        if (err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else {
+            console.log(bookDeleted);
+            res.send({status:'success',bookDeleted:bookDeleted});
+        }
+    });
+
+    Review.findByIdAndRemove({book_id }, function(err, reviewDeleted){
+        if (err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else {
+            console.log(reviewDeleted);
+            res.send({status:'success',reviewDeleted:reviewDeleted});
+        }
+    });
+
+    State.findByIdAndRemove({book_id }, function(err, stateDeleted){
+        if (err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else {
+            console.log(stateDeleted);
+            res.send({status:'success',stateDeleted:stateDeleted});
+        }
+    });
+
+    Rate.findByIdAndRemove({book_id }, function(err, rateDeleted){
+        if (err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else {
+            console.log(rateDeleted);
+            res.send({status:'success',rateDeleted:rateDeleted});
+        }
+    });
+}
+
+
 //--------------------------------------------------------------------------------------------------------------------------------------
+
 
 
 // --------------------------------------------------------Category routes--------------------------------------------------------------
@@ -74,6 +232,37 @@ app.post("/category/edit/:catID",function(req,res){
         }
     });
 });
+
+
+//Delete existing category (need category id)
+//Delete related Book,review,rate,user_books
+app.post("/category/delete/:catID", function(req, res){
+    const catID = req.params.catID;
+      Category.findByIdAndRemove({catID}, (err, catDeleted) => {
+    if (err){
+        console.log(err);
+        res.send({status:"fail"});
+    }
+    else {
+        console.log(catDeleted);
+        res.send({status:"success",catDeleted:catDeleted});
+        Book.findById({category_id: ObjectId(catID)},{$unset: {category_id: 1}},function(err, bookRelated){
+          if (err){
+            console.log(err);
+            res.send({status:"fail"});
+          }
+          else {
+            console.log(bookRelated);
+            res.send({status:"success",bookRelated:bookRelated});
+            book_remove(bookRelated._id);
+          }
+        }
+      );
+    }
+  });
+});
+
+
 
 //------------------------------------------------------------Author routes----------------------------------------------------------------------
 
@@ -155,6 +344,42 @@ app.get("/author/:author_id",function(req,res){
         }
     })
 });
+
+// Delete Author (using _id)
+// delete related books, rate, review, state ,
+app.post("/author/delete/:authID", function(req, res){
+    var authID=req.params.authID;
+    Author.findByIdAndRemove({authID }, function(err, authDeleted){
+        if (err){
+            console.log(err);
+            res.send({status:"fail"});
+        }
+        else {
+            console.log(authDeleted);
+            res.send({status:"success",authDeleted:authDeleted});
+            Book.findOne({ auth_id: ObjectId(authID)}, function(err, foundAuth){
+                if (err){
+                    console.log(err);
+                    res.send({status:"fail"});
+                }
+                else {
+                    console.log(foundAuth);
+                    res.send({status:"success",foundAuth:foundAuth});
+                    Book.update({auth_id: ObjectId(authID)},{$unset:{authID:1}}, function(err, authRelated){
+                        if (err){
+                            console.log(err);
+                            res.send({status:"fail"});
+                        }
+                        else {
+                            res.send(authRelated);
+                        }
+                    });
+                }
+            });
+        }
+    });
+});
+
 
 //----------------------------------------------------------Book Routes------------------------------------------------------------------
 
@@ -248,10 +473,17 @@ app.get("/book/:book_id",function(req,res){
 });
 
 
+
 function base64_encode(file) {
     var buff = fs.readFileSync(file);
     return new Buffer(buff).toString('base64');
 }
+// Delete book (using id)
+// Delete relative details from user_books , rate , review , author
+app.post("/book/delete/:book_id", function(req, res){
+    let book_id=req.params.book_id;
+    book_remove(book_id);
+});
 
 
 //------------------------------------------------------Rate Routes-----------------------------------------------------------
@@ -491,7 +723,7 @@ app.get("/user/all",function(req,res){
 });
 
 
-//Getting specific user all data including books, rating and state 
+//Getting specific user all data including books, rating and state
 
 app.get("/user/:user_id", async function(req,res){
     let user_id= req.params.user_id;
@@ -499,7 +731,7 @@ app.get("/user/:user_id", async function(req,res){
 
     User.findById({_id:user_id},function(err,foundUser){
         if(err)
-        { 
+        {
             console.log(err);
             res.send({status:"fail"});
         }
@@ -507,14 +739,14 @@ app.get("/user/:user_id", async function(req,res){
             findBook(foundUser).then(() => {
 
             findState(foundUser).then(()=>{
-            
+
             findRate(foundUser).then(()=>{
 
-                res.send({status:"success",user_name:foundUser.first_name ,userbooks:returnArray}); 
-            })  
+                res.send({status:"success",user_name:foundUser.first_name ,userbooks:returnArray});
+            })
             })
         });
-              
+
         }
     });
 
@@ -524,16 +756,16 @@ async function findBook(foundUser) {
     {
         await Book.findById({_id:ObjectID (foundUser.user_book[i]._id)},async function(err,foundBook){
          if(err)
-         { 
+         {
              console.log(err);
              res.send({status:"fail"});
          }
-            else{            
-                
+            else{
+
                  returnArray[i]=({bookId:foundBook._id,name :foundBook.name , avgRating : foundBook.avg_rate });
                  await Author.findById({_id:ObjectID(foundBook.auth_id)},function(err,foundAuthor){
                     if(err)
-                    { 
+                    {
                         console.log(err);
                         res.send({status:"fail"});
                     }
@@ -548,48 +780,48 @@ async function findBook(foundUser) {
 
 
             }
-           
+
         })
     }
 }
 
 async function findState(foundUser) {
-    
+
     for (let i=0;i<returnArray.length;i++)
     {
-        
+
         await State.findOne({book_id:ObjectID (returnArray[i].bookId),user_id:(foundUser._id)}, function(err,foundState){
          if(err)
-         { 
+         {
              console.log(err);
              res.send({status:"fail"});
          }
-            else{        
+            else{
                  returnArray[i].shelve=foundState.state;
             }
-           
+
         })
     }
 }
 
 async function findRate(foundUser) {
-    
+
     for (let i=0;i<returnArray.length;i++)
     {
-        
+
         await Rate.findOne({book_id:ObjectID (returnArray[i].bookId),user_id:(foundUser._id)}, function(err,foundRate){
          if(err)
-         { 
+         {
              console.log(err);
              res.send({status:"fail"});
          }
-            else{  
-                if (foundRate)   
+            else{
+                if (foundRate)
                  returnArray[i].rating=foundRate.user_rate;
                 else
                 returnArray[i].rating=0;
             }
-           
+
         })
     }
 }
@@ -656,6 +888,8 @@ app.get("/state/:bookState/:bookID/:userID",function(req,res){
         }
     });
 });
+
+
 
 // Adjusting port to listen to
 app.listen(process.env.PORT||3000,process.env.IP,function(){
