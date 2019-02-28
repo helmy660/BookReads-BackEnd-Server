@@ -1,10 +1,10 @@
 var mongoose = require("mongoose");
-var Book     = require("../models/book");
-var User     = require("../models/user");
+var Book = require("../models/book");
+var User = require("../models/user");
 
 
-var rateSchema = new mongoose.Schema({
-    user_rate: Number,
+var stateSchema = new mongoose.Schema({
+    state: String,
     book_id : { 
         type : mongoose.Schema.Types.ObjectId,
          ref : "Book"
@@ -15,6 +15,6 @@ var rateSchema = new mongoose.Schema({
      },
 });
 
-var Rate = mongoose.model("Rate",rateSchema);
+var State = mongoose.model("State",stateSchema);
 
-module.exports= Rate;
+module.exports= State;
