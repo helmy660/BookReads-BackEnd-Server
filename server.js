@@ -9,10 +9,23 @@ var cors = require("cors");
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var config = require('./config'); // get our config file
+
+const multer = require("multer");
+
+
 var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
 
 //-------------------------------------------------------------Uses-------------------------------------------------------------------
 app.use(cors());
+const storage = multer.diskStorage({
+    destination: "./public/uploads/"
+ });
+ 
+ const upload = multer({
+    storage: storage,
+    limits:{fileSize: 1000000}
+ });
+
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 app.use(morgan('dev'));
@@ -384,11 +397,11 @@ app.post("/author/delete/:authID", function(req, res){
 //----------------------------------------------------------Book Routes------------------------------------------------------------------
 
 //Adding new book (will require name , category id , auth id from form data + image as file)
-app.post("/book/add",function(req,res){
+app.post("/book/add",upload.single('file'),function(req,res){
     var bName   = req.body.bName;
     var catID   = req.body.catID;
     var authID  = req.body.authID;
-    var book_image =base64_encode(req.body.file) ;
+    //var book_image =base64_encode(req.body.file) ;
     var newBook = {
         name : bName ,
         category_id : catID ,
@@ -396,6 +409,16 @@ app.post("/book/add",function(req,res){
         book_img : book_image
     };
 
+    if(req.file.path){
+        newBook.book_img.data=fs.readFileSync(req.file.path);
+        newBook.book_img.contentType='image/png';
+
+    }else
+    {
+        newBook.book_img={};
+
+    }
+        
     Book.create(newBook,function(err,createdBook){
         if (err){
             console.log(err);
@@ -407,6 +430,8 @@ app.post("/book/add",function(req,res){
         }
     });
 });
+
+
 
 //Getting all books
 app.get("/book/all",function(req,res){
@@ -456,8 +481,11 @@ app.get("/book/bycategory/:cat_id",function(req,res){
 
 
 // Getting all details about specific book (book details , reviews, rates , category, author)
+// Getting rate for this book for this user 
+// Getting state for this book for this user 
 app.get("/book/:book_id",function(req,res){
    let book_id=req.params.book_id;
+   //let user_id=req.params.user_id;
 
    Book.findById({_id: book_id}).populate('category_id').populate('auth_id').exec(function(err,foundBook){
     if(err){
@@ -465,7 +493,6 @@ app.get("/book/:book_id",function(req,res){
         res.send({status:"fail"});
     }
     else{
-
         console.log(foundBook);
         res.send({status:'success',bookData:foundBook});
     }
