@@ -6,6 +6,7 @@ var mongoose = require("mongoose");
 //var morgan = require('morgan');
 var {ObjectID} = require("mongodb");
 var cors = require("cors");
+var fs=require("fs");
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 //var config = require('./config'); // get our config file
@@ -402,11 +403,11 @@ app.post("/book/add",upload.single('file'),function(req,res){
     var catID   = req.body.catID;
     var authID  = req.body.authID;
     //var book_image =base64_encode(req.body.file) ;
-    var newBook = {
+    var newBook =  {
         name : bName ,
         category_id : catID ,
         auth_id : authID,       //////////////////////////////////////
-        
+        book_img:{data:"",contentType:""}
     };
 
     if(req.file.path){
